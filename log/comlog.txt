@@ -1,0 +1,14 @@
+Thu May  8 16:08:36 2025 ::       Virant (   -1): who 
+Thu May  8 16:08:40 2025 ::       Virant (   -1): help prompt
+Thu May  8 16:08:42 2025 ::       Virant (   -1): prompt 
+Thu May  8 16:08:43 2025 ::       Virant (   -1): prompt all
+Thu May  8 16:08:45 2025 ::       Virant (   -1): help prompt
+Thu May  8 16:08:46 2025 ::       Virant (   -1): score 
+Thu May  8 16:08:48 2025 ::       Virant (   -1): who 
+Thu May  8 16:08:53 2025 ::       Virant (   -1): config +color
+Thu May  8 16:08:54 2025 ::       Virant (   -1): who 
+Thu May  8 16:08:56 2025 ::       Virant (   -1): look 
+Thu May  8 16:08:57 2025 ::       Virant (   -1): north 
+Thu May  8 16:08:58 2025 ::       Virant (   -1): prompt all
+Thu May  8 16:08:59 2025 ::       Virant (   -1): west 
+Thu May  8 16:09:02 2025 ::       Virant (   -1): practice 
