@@ -30,7 +30,7 @@ do
   do
     logfile=../log/$index.log
     if [ ! -e $logfile ]; then break; fi
-    let index=$index+1
+    index=$((index+1))
   done
 
   # run the mud

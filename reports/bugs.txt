@@ -5,3 +5,20 @@
 [*****] BUG: Char_to_room: NULL.
 [*****] BUG: load_quest_object : Invalid object vnum 18189.
 [*****] BUG: load_quest_object : Invalid object vnum 18182.
+[*****] BUG: load_quest_object : Invalid object vnum 18192.
+[*****] BUG: load_quest_object : Invalid object vnum 18189.
+[*****] BUG: load_quest_object : Invalid object vnum 18185.
+[*****] BUG: load_quest_object : Invalid object vnum 18190.
+[*****] BUG: load_quest_object : Invalid object vnum 18187.
+[*****] BUG: load_quest_object : Invalid object vnum 18187.
+[*****] BUG: load_quest_object : Invalid object vnum 18182.
+[*****] BUG: load_quest_object : Invalid object vnum 18192.
+[*****] BUG: load_quest_object : Invalid object vnum 18183.
+[*****] BUG: load_quest_object : Invalid object vnum 18192.
+[*****] BUG: load_quest_object : Invalid object vnum 18185.
+[*****] BUG: load_quest_object : Invalid object vnum 18192.
+[*****] BUG: load_quest_object : Invalid object vnum 18182.
+[*****] BUG: load_quest_object : Invalid object vnum 18184.
+[*****] BUG: load_quest_object : Invalid object vnum 18182.
+[*****] BUG: load_quest_object : Invalid object vnum 18187.
+[*****] BUG: load_quest_object : Invalid object vnum 18184.

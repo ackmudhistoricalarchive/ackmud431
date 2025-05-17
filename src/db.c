@@ -510,6 +510,7 @@ void boot_db( void )
 
       for( ;; )
       {
+         char areaBuf[MAX_STRING_LENGTH];
          strcpy( strArea, fread_word( fpList ) );
          if( strArea[0] == '$' )
             break;
@@ -520,11 +521,15 @@ void boot_db( void )
          }
          else
          {
-            if( ( fpArea = fopen( strArea, "r" ) ) == NULL )
+            strcpy(areaBuf, AREA_DIR);
+            strcat(areaBuf, strArea);
+            if( ( fpArea = fopen( areaBuf, "r" ) ) == NULL )
             {
-               log_string( strArea );
+               log_string( areaBuf );
                kill( getpid(  ), SIGQUIT );
             }
+
+            log_f("%s successfully loaded.", areaBuf);
          }
 
          for( ;; )

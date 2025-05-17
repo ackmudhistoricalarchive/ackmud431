@@ -1280,7 +1280,8 @@
 #define MOB_DIR         "MOBProgs/" /* MOBProg files                */
 #endif
 
-#define AREA_LIST       "area.lst"  /* List of areas                */
+#define AREA_DIR	"../area/"
+#define AREA_LIST       AREA_DIR "area.lst"  /* List of areas                */
 
 #define MAIL_DIR        "../mail/"
 #define DATA_DIR        "../data/"
