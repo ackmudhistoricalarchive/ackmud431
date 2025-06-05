@@ -4,7 +4,7 @@
 #
 
 # grab the port number
-port=8891
+port=8890
 
 # set up
 cd ../reports
