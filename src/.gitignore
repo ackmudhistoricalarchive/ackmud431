@@ -1,3 +1,4 @@
 ack
 *.o
+*.old
 nohup.out

@@ -1,0 +1,645 @@
+#PLAYER
+Revision     15
+Name         Virant~
+ShortDescr   ~
+LongDescr    ~
+Description  ~
+Prompt       <%hhp %mm %vmv> ~
+Sex          1
+LoginSex     1
+Class        2
+Race         7
+Level        85
+Sentence     0
+Invis        0
+Incog		 0
+m/c          -1 -1 85 -1 -1 
+Remort       -1 -1 -1 -1 -1 
+Adeptlevel   -1
+ Trust        0
+Wizbit       0
+Played       247682
+Note         0
+Room         66
+HpManaMove   31 31 120 120 107 107
+Money 8 4 0 0 0 0 0 0 0 
+BankMoney 8 0 0 0 0 0 0 0 0 
+Exp          172
+Act          16384
+Config       2414
+AffectedBy   0
+Position     7
+Practice     23
+SavingThrow  6
+Alignment    0
+Hitroll      14
+Damroll      12
+Armor        9
+Wimpy        0
+Deaf         0
+Generation   0
+Clan         0
+Order        2 3 1 0 4
+Index	   3 2 0 1 4
+Mkills	   5
+Mkilled	   0
+Pkills	   0
+Pkilled	   0
+Password     ViAFk/vy3C7LQ~
+Bamfin       ~
+Bamfout      ~
+Roomenter    slithers in from~
+Roomexit     slithers~
+Title         needs a new title!~
+Immskll     ~
+Whoname      Woff~
+Monitor	   0
+Host         127.0.0.1~
+Failures     0
+LastLogin    Thu Jun  5 08:21:59 2025
+~
+HiCol	   y~
+DimCol	   b~
+TermRows    25
+TermColumns    80
+Email   not set~
+EmailValid    0
+AssistMsg     '@@eBANZAI!!@@N $N must be assisted!!@@N'~
+Alias_Name0 <none>~
+Alias0      <none>~
+Alias_Name1 <none>~
+Alias1      <none>~
+Alias_Name2 <none>~
+Alias2      <none>~
+Alias_Name3 <none>~
+Alias3      <none>~
+Alias_Name4 <none>~
+Alias4      <none>~
+Alias_Name5 <none>~
+Alias5      <none>~
+colors
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+AttrPerm     13 13 13 13 13
+AttrMod      0 0 0 0 0
+AttrMax      22 10 8 23 16
+Bloodlust    24
+Bloodlustmax   0
+Vamplevel      0
+Vampexp       0
+Vampskillnum  0
+Vampskillmax  0
+Vampbloodline 0
+Vamppracs     0
+Hasexpfix     1
+Questpoints   0
+RecallVnum    3001
+GainMana      100
+GainHp        21
+GainMove      107
+RulerRank    0
+Condition    0 40 39
+Pagelen      40
+Pflags       0
+Skill        99 'reserved'
+Skill        99 'acid blast'
+Skill        99 'armor'
+Skill        99 'animate'
+Skill        99 'bad breath'
+Skill        99 'bark skin'
+Skill        99 'bless'
+Skill        99 'blindness'
+Skill        99 'bloody tears'
+Skill        99 'burning hands'
+Skill        99 'call lightning'
+Skill        99 'calm'
+Skill        99 'cause critical'
+Skill        99 'cause light'
+Skill        99 'cause serious'
+Skill        99 'change sex'
+Skill        99 'charm person'
+Skill        99 'chill touch'
+Skill        99 'color spray'
+Skill        99 'continual light'
+Skill        99 'control weather'
+Skill        99 'create food'
+Skill        99 'create spring'
+Skill        99 'create water'
+Skill        99 'cure blindness'
+Skill        99 'cure critical'
+Skill        99 'cure light'
+Skill        99 'cure poison'
+Skill        99 'cure serious'
+Skill        99 'curse'
+Skill        99 'detect evil'
+Skill        99 'detect hidden'
+Skill        99 'detect invis'
+Skill        99 'detect magic'
+Skill        99 'detect poison'
+Skill        99 'detect undead'
+Skill        99 'detection'
+Skill        99 'dimension blade'
+Skill        99 'dispel evil'
+Skill        99 'dispel magic'
+Skill        99 'earthquake'
+Skill        99 'ego whip'
+Skill        99 'enchant weapon'
+Skill        99 'energy drain'
+Skill        99 'enhance weapon'
+Skill        99 'faerie fire'
+Skill        99 'faerie fog'
+Skill        99 'fighting trance'
+Skill        99 'fireball'
+Skill        99 'fire blade'
+Skill        99 'flamestrike'
+Skill        99 'flare'
+Skill        99 'fly'
+Skill        99 'gate'
+Skill        99 'giant strength'
+Skill        99 'harm'
+Skill        99 'heal'
+Skill        99 'hypnosis'
+Skill        99 'identify'
+Skill        99 'infravision'
+Skill        99 'influx'
+Skill        99 'invis'
+Skill        99 'know alignment'
+Skill        99 'know weakness'
+Skill        99 'know critical'
+Skill        99 'know item'
+Skill        99 'laser bolt'
+Skill        99 'lightning bolt'
+Skill        99 'locate object'
+Skill        99 'magic missile'
+Skill        99 'mass invis'
+Skill        99 'mind flail'
+Skill        99 'mystic armour'
+Skill        99 'nerve fire'
+Skill        99 'night vision'
+Skill        99 'pass door'
+Skill        99 'phase'
+Skill        99 'psychic crush'
+Skill        99 'psychic thrust'
+Skill        99 'poison'
+Skill        99 'produce food'
+Skill        99 'protection'
+Skill        99 'refresh'
+Skill        99 'remove curse'
+Skill        99 'sanctuary'
+Skill        99 'seal room'
+Skill        99 'see magic'
+Skill        99 'sense evil'
+Skill        99 'shade'
+Skill        99 'shield'
+Skill        99 'shocking grasp'
+Skill        99 'sight'
+Skill        99 'sleep'
+Skill        99 'stalker'
+Skill        99 'stone skin'
+Skill        99 'suffocate'
+Skill        99 'summon'
+Skill        99 'teleport'
+Skill        99 'travel'
+Skill        99 'vampire bite'
+Skill        99 'ventriloquate'
+Skill        99 'warcry'
+Skill        99 'weaken'
+Skill        99 'beacon'
+Skill        99 'portal'
+Skill        99 'window'
+Skill        99 'word of recall'
+Skill        99 'hellspawn'
+Skill        99 'planergy'
+Skill        99 'visit'
+Skill        99 'barrier'
+Skill        99 'phobia'
+Skill        99 'mind bolt'
+Skill        99 'mindflame'
+Skill        99 'chain lightning'
+Skill        99 'static'
+Skill        99 'cloak:absorption'
+Skill        99 'cloak:reflection'
+Skill        99 'cloak:flaming'
+Skill        99 'cloak:darkness'
+Skill        99 'cloak:adept'
+Skill        99 'cloak:regeneration'
+Skill        99 'acid breath'
+Skill        99 'fire breath'
+Skill        99 'frost breath'
+Skill        99 'gas breath'
+Skill        99 'lightning breath'
+Skill        99 'blood leach'
+Skill        99 'appraise'
+Skill        99 'bash'
+Skill        99 'beserk'
+Skill        99 'climb'
+Skill        99 'dirt'
+Skill        99 'nodisarm'
+Skill        99 'notrip'
+Skill        99 'smash'
+Skill        99 'trip'
+Skill        99 'circle'
+Skill        99 'backstab'
+Skill        99 'disarm'
+Skill        99 'dodge'
+Skill        99 'dualwield'
+Skill        99 'enhanced damage'
+Skill        99 'feed'
+Skill        99 'find doors'
+Skill        99 'fourth attack'
+Skill        99 'headbutt'
+Skill        99 'hide'
+Skill        99 'hunt'
+Skill        99 'kick'
+Skill        99 'knee'
+Skill        99 'martial arts'
+Skill        99 'parry'
+Skill        99 'peek'
+Skill        99 'pick lock'
+Skill        99 'punch'
+Skill        99 'rescue'
+Skill        99 'second attack'
+Skill        99 'shadowform'
+Skill        99 'shield block'
+Skill        99 'sneak'
+Skill        99 'stake'
+Skill        99 'steal'
+Skill        99 'stun'
+Skill        99 'third attack'
+Skill        99 'disguise'
+Skill        99 'instruct'
+Skill        99 'frenzy'
+Skill        99 'imprint'
+Skill        99 'emotion control'
+Skill        99 'general purpose'
+Skill        99 'high explosive'
+Skill        99 'deflect weapon'
+Skill        99 'black hand'
+Skill        99 'throwing needle'
+Skill        99 'morale'
+Skill        99 'leadership'
+Skill        99 'Ice Bolt'
+Skill        99 'water elemental'
+Skill        99 'skeleton'
+Skill        99 'poison weapon'
+Skill        99 'embrace'
+Skill        99 'mesmerise'
+Skill        99 'ethereal travel'
+Skill        99 'adrenaline'
+Skill        99 'throwing star'
+Skill        99 'adrenaline bonus'
+Skill        99 'fire elemental'
+Skill        99 'rune:fire'
+Skill        99 'rune:shock'
+Skill        99 'rune:poison'
+Skill        99 'healing light'
+Skill        99 'withering shadow'
+Skill        99 'mana flare'
+Skill        99 'mana drain'
+Skill        99 'cage'
+Skill        99 'room dispel'
+Skill        99 'soul net'
+Skill        99 'condense soul'
+Skill        99 'blood walk'
+Skill        99 'restoration'
+Skill        99 'infuse'
+Skill        99 'fifth attack'
+Skill        99 'sixth attack'
+Skill        99 'scent'
+Skill        99 'holy light'
+Skill        99 'target'
+Skill        99 'charge'
+Skill        99 'scout'
+Skill        99 'mount'
+Skill        99 'divine intervention'
+Skill        99 'holy armor'
+Skill        99 'unit tactics'
+Skill        99 'earth elemental'
+Skill        99 'iron golem'
+Skill        99 'diamond golem'
+Skill        99 'soul thief'
+Skill        99 'holy avenger'
+Skill        99 'heat armor'
+Skill        99 'Retributive Strike'
+Skill        99 'Lava Burst'
+Skill        99 'fireshield'
+Skill        99 'iceshield'
+Skill        99 'shockshield'
+Skill        99 'shadowshield'
+Skill        99 'thoughtshield'
+Skill        99 'Rage:wolven strength'
+Skill        99 'Rage:sharpened claws'
+Skill        99 'Rage:disregard for pain'
+Skill        99 'Enraged'
+Skill        99 'tribal claw'
+Skill        99 'mark'
+Skill        99 'bloodsign'
+Skill        99 'bloodsense'
+Skill        99 'summon pegasus'
+Skill        99 'summon nightmare'
+Skill        99 'summon beast'
+Skill        99 'summon devourer'
+Skill        99 'summon shadow'
+Skill        99 'creature bond'
+Skill        99 'corrupt bond'
+Skill        99 'decapitate'
+Skill        99 'Fire Blast'
+Skill        99 'Shock Storm'
+Skill        99 'Cone of cold'
+Skill        99 'Holy Wrath'
+Skill        99 'Wraith Touch'
+Skill        99 'Thought Vise'
+Skill        99 'black curse'
+Skill        99 'cloak:misery'
+Skill        99 'poison:quinine'
+Skill        99 'poison:arsenic'
+Skill        99 'sonic blast'
+Skill        99 'mystical potency'
+Skill        99 'thaumatergy'
+Skill        99 'mystical focus'
+End
+
+#OBJECT
+Nest         0
+Name         clip-on clipon earring~
+ShortDescr   @@NA @@eGlowing @@rGlittering @@pEarring@@N~
+Description  @@NA small @@pearring @@eGlowss@@N here, maybe you should get it~
+Vnum         20118
+ExtraFlags   0
+WearFlags    8388672
+WearLoc      7
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     9
+Weight       1
+Level        4
+Timer        0
+Cost         14
+Values       5 0 0 0 0 0 0 0 0 0
+Affect       -1 -1 2 18 0
+End
+
+#OBJECT
+Nest         0
+Name         necklace~
+ShortDescr   @@NA @@yGolden @@NNecklace~
+Description  @@NThis @@ygolden @@necklace @@ePROVES @@Nyou completed your schooling~
+Vnum         20105
+ExtraFlags   0
+WearFlags    8388736
+WearLoc      9
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     9
+Weight       1
+Level        4
+Timer        0
+Cost         84
+Values       4 0 0 0 0 0 0 0 0 0
+Affect       -1 -1 -5 17 0
+Affect       -1 -1 1 18 0
+Affect       -1 -1 1 19 0
+Affect       -1 -1 10 12 0
+End
+
+#OBJECT
+Nest         0
+Name         diploma~
+ShortDescr   @@pA SoESHM Diploma@@N~
+Description  A paper proclaiming graduation from SoE School for Higher Mudding is here.
+~
+Vnum         20115
+ExtraFlags   64
+WearFlags    8421376
+WearLoc      0
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     1
+Weight       1
+Level        4
+Timer        0
+Cost         14
+Values       0 0 -1 0 0 0 0 0 0 0
+Affect       -1 -1 1 19 0
+Affect       -1 -1 1 18 0
+Affect       -1 -1 1 5 0
+Affect       -1 -1 1 4 0
+End
+
+#OBJECT
+Nest         0
+Name         x-ray Xray specs~
+ShortDescr   @@dX@@c-Ray@@G Specs@@N~
+Description  @@NA pair of plastic specs with swirling lenses lies here.@@N
+~
+Vnum         20117
+ExtraFlags   0
+WearFlags    8388624
+WearLoc      5
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     9
+Weight       1
+Level        1
+Timer        0
+Cost         10
+Values       4 0 0 0 0 0 0 0 0 0
+Affect       -1 -1 10 13 0
+Affect       -1 -1 10 12 0
+End
+
+#OBJECT
+Nest         0
+Name         sword~
+ShortDescr   a stainless steel sword~
+Description  A sword made from cheap steel lies here, reflecting light.
+~
+Vnum         20102
+ExtraFlags   0
+WearFlags    8421376
+WearLoc      20
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     5
+Weight       1
+Level        1
+Timer        0
+Cost         11
+Values       0 3 5 3 0 0 0 0 0 0
+Affect       -1 -1 1 18 0
+Affect       -1 -1 1 19 0
+End
+
+#OBJECT
+Nest         0
+Name         bracelet~
+ShortDescr   @@rA friendship bracelet@@N~
+Description  A bracelet made from colored string sits here in a pile.
+~
+Vnum         20113
+ExtraFlags   0
+WearFlags    8390656
+WearLoc      14
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     9
+Weight       1
+Level        1
+Timer        0
+Cost         66
+Values       4 0 0 0 0 0 0 0 0 0
+Affect       -1 -1 2 18 0
+Affect       -1 -1 3 19 0
+Affect       -1 -1 -5 17 0
+End
+
+#OBJECT
+Nest         0
+Name         bracelet~
+ShortDescr   @@rA friendship bracelet@@N~
+Description  A bracelet made from colored string sits here in a pile.
+~
+Vnum         20113
+ExtraFlags   0
+WearFlags    8390656
+WearLoc      15
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     9
+Weight       1
+Level        1
+Timer        0
+Cost         66
+Values       4 0 0 0 0 0 0 0 0 0
+Affect       -1 -1 2 18 0
+Affect       -1 -1 3 19 0
+Affect       -1 -1 -5 17 0
+End
+
+#OBJECT
+Nest         0
+Name         gloves~
+ShortDescr   @@BSkeleton's @@lGloves@@N~
+Description  @@NWhen you put these @@lskeleton's gloves@@N on, your fingers turn to @@gbone@@N~
+Vnum         20109
+ExtraFlags   0
+WearFlags    8392704
+WearLoc      16
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     9
+Weight       1
+Level        1
+Timer        0
+Cost         11
+Values       4 0 0 0 0 0 0 0 0 0
+Affect       -1 -1 1 19 0
+Affect       -1 -1 1 18 0
+End
+
+#OBJECT
+Nest         0
+Name         jacket~
+ShortDescr   @@NA shabby @@lskeleton's @@Njacket~
+Description  @@N A shabby @@lskeleton's @@Njacket lies here, waiting for you to take it~
+Vnum         20103
+ExtraFlags   0
+WearFlags    8650752
+WearLoc      24
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     9
+Weight       5
+Level        1
+Timer        0
+Cost         10
+Values       4 0 0 0 0 0 0 0 0 0
+End
+
+#OBJECT
+Nest         0
+Name         shield~
+ShortDescr   @@BA @@RTiny @@BShield@@N~
+Description  @@BYou see a @@RTiny Shield @@B that may help protect you from minimal damage ~
+Vnum         20104
+ExtraFlags   0
+WearFlags    8421376
+WearLoc      21
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     9
+Weight       1
+Level        1
+Timer        0
+Cost         87
+Values       4 0 0 0 0 0 0 0 0 0
+Affect       -1 -1 1 19 0
+Affect       -1 -1 1 18 0
+Affect       -1 -1 -10 17 0
+Affect       -1 -1 -2 24 0
+End
+
+#OBJECT
+Nest         0
+Name         belt~
+ShortDescr   @@NA @@bDusty @@eJewelled @@NBelt~
+Description  @@NA dusty little @@rjewelled @@Nbelt for your waist~
+Vnum         20112
+ExtraFlags   0
+WearFlags    8519680
+WearLoc      23
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     9
+Weight       1
+Level        1
+Timer        0
+Cost         51
+Values       3 0 0 0 0 0 0 0 0 0
+Affect       -1 -1 -5 17 0
+Affect       -1 -1 2 18 0
+End
+
+#OBJECT
+Nest         0
+Name         cape~
+ShortDescr   a @@yHaunted@@N Cape~
+Description  @@N Maybe you should tie this @@yHaunted@@N Cape around your neck~
+Vnum         20111
+ExtraFlags   0
+WearFlags    8454144
+WearLoc      22
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     9
+Weight       1
+Level        1
+Timer        0
+Cost         41
+Values       4 0 0 0 0 0 0 0 0 0
+Affect       -1 -1 -5 17 0
+End
+
+#OBJECT
+Nest         0
+Name         hat~
+ShortDescr   @@bA Ghost's Hat@@N~
+Description  A hat from a Ghost might be a good thing to have~
+Vnum         20106
+ExtraFlags   0
+WearFlags    8388616
+WearLoc      4
+Money 8 0 0 0 0 0 0 0 0 ClassFlags   1
+ItemType     9
+Weight       1
+Level        1
+Timer        0
+Cost         51
+Values       4 0 0 0 0 0 0 0 0 0
+Affect       -1 -1 -5 17 0
+Affect       -1 -1 1 18 0
+Affect       -1 -1 1 19 0
+End
+
+#END

@@ -2620,21 +2620,7 @@ OBJ_DATA *create_object( OBJ_INDEX_DATA * pObjIndex, int level )
    *obj = obj_zero;
    obj->pIndexData = pObjIndex;
    obj->in_room = NULL;
-   if( pObjIndex->level < 3 )
-   {
-      if( pObjIndex->level == 2 )
-      {
-         obj->level = 1;
-      }
-      else
-      {
-         obj->level = level;
-      }
-   }
-   else
-   {
-      obj->level = pObjIndex->level;
-   }
+   obj->level = pObjIndex->level;
 
    obj->wear_loc = -1;
 
