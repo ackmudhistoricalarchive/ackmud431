@@ -60,22 +60,25 @@ class WebSocketSession:
         self.sock = sock
         self.text_buffer = ""
 
-    def send_line(self, text: str) -> None:
+    def send_line(self, text: str, masked: bool = True) -> None:
         payload = text.encode("utf-8")
         mask = b"\x11\x22\x33\x44"
 
         frame = bytearray([0x81])
         if len(payload) < 126:
-            frame.append(0x80 | len(payload))
+            frame.append((0x80 | len(payload)) if masked else len(payload))
         elif len(payload) < 65536:
-            frame.append(0x80 | 126)
+            frame.append((0x80 | 126) if masked else 126)
             frame.extend(struct.pack("!H", len(payload)))
         else:
-            frame.append(0x80 | 127)
+            frame.append((0x80 | 127) if masked else 127)
             frame.extend(struct.pack("!Q", len(payload)))
 
-        frame.extend(mask)
-        frame.extend(bytes(b ^ mask[i % 4] for i, b in enumerate(payload)))
+        if masked:
+            frame.extend(mask)
+            frame.extend(bytes(b ^ mask[i % 4] for i, b in enumerate(payload)))
+        else:
+            frame.extend(payload)
         self.sock.sendall(frame)
 
     def _recv_frame(self) -> tuple[int, bytes]:
@@ -227,6 +230,30 @@ class ConnectionIntegrationTests(unittest.TestCase):
             session = WebSocketSession(sock)
             login_new_character(session, name, password)
             session.send_line("quit")
+
+    def test_websocket_upgrade_accepts_unmasked_client_frames(self) -> None:
+        ws_key = "dGhlIHNhbXBsZSBub25jZQ=="
+
+        with socket.create_connection(("127.0.0.1", self.port), timeout=2) as sock:
+            sock.settimeout(2)
+            request = (
+                "GET / HTTP/1.1\r\n"
+                "Host: localhost\r\n"
+                "Upgrade: websocket\r\n"
+                "Connection: Upgrade\r\n"
+                f"Sec-WebSocket-Key: {ws_key}\r\n"
+                "Sec-WebSocket-Version: 13\r\n\r\n"
+            ).encode("ascii")
+            sock.sendall(request)
+
+            response = b""
+            while b"\r\n\r\n" not in response:
+                response += sock.recv(4096)
+            self.assertIn(b"101 Switching Protocols", response)
+
+            session = WebSocketSession(sock)
+            session.send_line("Unmasked", masked=False)
+            session.read_until_any(["Did I get that right", "Name:"], timeout=10.0)
 
 
 if __name__ == "__main__":
