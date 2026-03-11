@@ -71,6 +71,19 @@ const char echo_off_str[] = { IAC, WILL, TELOPT_ECHO, '\0' };
 const char echo_on_str[] = { IAC, WONT, TELOPT_ECHO, '\0' };
 const char go_ahead_str[] = { IAC, GA, '\0' };
 
+void write_echo_off( DESCRIPTOR_DATA * d )
+{
+   if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+      write_to_buffer( d, echo_off_str, 0 );
+}
+
+void write_echo_on( DESCRIPTOR_DATA * d )
+{
+   if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+      if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+         write_to_buffer( d, echo_on_str, 0 );
+}
+
 void copyover_recover args( ( void ) );
 
 /*
@@ -1014,7 +1027,14 @@ bool websocket_extract_lines( DESCRIPTOR_DATA * d )
                return FALSE;
             d->inbuf[cur++] = ( ch == '\r' ) ? '\n' : ch;
          }
-         d->inbuf[cur++] = '\n';
+
+         /*
+          * Browsers commonly send newline-terminated input already.
+          * Only synthesize a line terminator when the frame does not
+          * end with one, otherwise we create an extra empty command.
+          */
+         if( cur == 0 || d->inbuf[cur - 1] != '\n' )
+            d->inbuf[cur++] = '\n';
          d->inbuf[cur] = '\0';
       }
 
@@ -2574,7 +2594,8 @@ void nanny( DESCRIPTOR_DATA * d, char *argument )
           * Old player 
           */
          write_to_buffer( d, "Password: ", 0 );
-         write_to_buffer( d, echo_off_str, 0 );
+         if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+            write_to_buffer( d, echo_off_str, 0 );
          d->connected = CON_GET_OLD_PASSWORD;
          return;
       }
@@ -2627,7 +2648,8 @@ void nanny( DESCRIPTOR_DATA * d, char *argument )
          return;
       }
 
-      write_to_buffer( d, echo_on_str, 0 );
+      if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+         write_to_buffer( d, echo_on_str, 0 );
 
       if( check_reconnect( d, ch->name, TRUE ) )
          return;
@@ -2677,8 +2699,10 @@ void nanny( DESCRIPTOR_DATA * d, char *argument )
       {
          case 'y':
          case 'Y':
-            sprintf( buf, "New character.\n\rGive me a password for %s: %s", ch->name, echo_off_str );
+            sprintf( buf, "New character.\n\rGive me a password for %s: ", ch->name );
             write_to_buffer( d, buf, 0 );
+            if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+               write_to_buffer( d, echo_off_str, 0 );
             d->connected = CON_GET_NEW_PASSWORD;
             return;
 
@@ -2734,7 +2758,8 @@ void nanny( DESCRIPTOR_DATA * d, char *argument )
          d->connected = CON_GET_NEW_PASSWORD;
          return;
       }
-      write_to_buffer( d, echo_on_str, 0 );
+      if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+         write_to_buffer( d, echo_on_str, 0 );
       show_menu_to( d );
       d->connected = CON_MENU;
       return;

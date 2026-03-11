@@ -59,6 +59,7 @@ class WebSocketSession:
     def __init__(self, sock: socket.socket) -> None:
         self.sock = sock
         self.text_buffer = ""
+        self.raw_text_buffer = b""
 
     def send_line(self, text: str, masked: bool = True) -> None:
         payload = text.encode("utf-8")
@@ -113,6 +114,24 @@ class WebSocketSession:
             except socket.timeout:
                 continue
             if opcode == 0x1:
+                self.raw_text_buffer += payload
+                self.text_buffer += payload.decode("latin1", errors="ignore")
+            elif opcode == 0x8:
+                break
+        raise AssertionError(f"did not observe any of {needles!r}; got tail={self.text_buffer[-400:]!r}")
+    def read_until_any_raw(self, needles: list[str], timeout: float = 6.0) -> bytes:
+        deadline = time.time() + timeout
+        lowered = [n.lower() for n in needles]
+        while time.time() < deadline:
+            hay = self.text_buffer.lower()
+            if any(n in hay for n in lowered):
+                return self.raw_text_buffer
+            try:
+                opcode, payload = self._recv_frame()
+            except socket.timeout:
+                continue
+            if opcode == 0x1:
+                self.raw_text_buffer += payload
                 self.text_buffer += payload.decode("latin1", errors="ignore")
             elif opcode == 0x8:
                 break
@@ -254,6 +273,32 @@ class ConnectionIntegrationTests(unittest.TestCase):
             session = WebSocketSession(sock)
             session.send_line("Unmasked", masked=False)
             session.read_until_any(["Did I get that right", "Name:"], timeout=10.0)
+
+    def test_websocket_login_prompt_omits_telnet_echo_bytes(self) -> None:
+        name = "Virant"
+        ws_key = "dGhlIHNhbXBsZSBub25jZQ=="
+
+        with socket.create_connection(("127.0.0.1", self.port), timeout=2) as sock:
+            sock.settimeout(2)
+            request = (
+                "GET / HTTP/1.1\r\n"
+                "Host: localhost\r\n"
+                "Upgrade: websocket\r\n"
+                "Connection: Upgrade\r\n"
+                f"Sec-WebSocket-Key: {ws_key}\r\n"
+                "Sec-WebSocket-Version: 13\r\n\r\n"
+            ).encode("ascii")
+            sock.sendall(request)
+
+            response = b""
+            while b"\r\n\r\n" not in response:
+                response += sock.recv(4096)
+            self.assertIn(b"101 Switching Protocols", response)
+
+            ws_session = WebSocketSession(sock)
+            ws_session.send_line(name)
+            payload = ws_session.read_until_any_raw(["Password:"], timeout=10.0)
+            self.assertNotIn(b"\xff", payload)
 
 
 if __name__ == "__main__":
