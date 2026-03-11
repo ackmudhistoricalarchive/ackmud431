@@ -271,6 +271,7 @@ struct descriptor_data
 
 #define DESC_FLAG_PASSTHROUGH 1  /* Used when data is being passed to */
 #define DESC_FLAG_WEBSOCKET 2
+#define DESC_FLAG_GREETING_SENT 4
                  /*
                   * Another prog.                     
                   */
