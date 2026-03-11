@@ -974,7 +974,8 @@ bool websocket_handshake( DESCRIPTOR_DATA * d, const char *request )
    d->ws_rawlen = 0;
    d->inbuf[0] = '\0';
 
-   websocket_write_frame( d->descriptor, "\n\rName: ", 0 );
+   send_login_greeting( d );
+   write_to_buffer( d, "\n\rName: ", 0 );
 
    return TRUE;
 }
