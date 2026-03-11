@@ -71,6 +71,19 @@ const char echo_off_str[] = { IAC, WILL, TELOPT_ECHO, '\0' };
 const char echo_on_str[] = { IAC, WONT, TELOPT_ECHO, '\0' };
 const char go_ahead_str[] = { IAC, GA, '\0' };
 
+void write_echo_off( DESCRIPTOR_DATA * d )
+{
+   if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+      write_to_buffer( d, echo_off_str, 0 );
+}
+
+void write_echo_on( DESCRIPTOR_DATA * d )
+{
+   if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+      if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+         write_to_buffer( d, echo_on_str, 0 );
+}
+
 void copyover_recover args( ( void ) );
 
 /*
@@ -2581,7 +2594,8 @@ void nanny( DESCRIPTOR_DATA * d, char *argument )
           * Old player 
           */
          write_to_buffer( d, "Password: ", 0 );
-         write_to_buffer( d, echo_off_str, 0 );
+         if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+            write_to_buffer( d, echo_off_str, 0 );
          d->connected = CON_GET_OLD_PASSWORD;
          return;
       }
@@ -2634,7 +2648,8 @@ void nanny( DESCRIPTOR_DATA * d, char *argument )
          return;
       }
 
-      write_to_buffer( d, echo_on_str, 0 );
+      if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+         write_to_buffer( d, echo_on_str, 0 );
 
       if( check_reconnect( d, ch->name, TRUE ) )
          return;
@@ -2684,8 +2699,10 @@ void nanny( DESCRIPTOR_DATA * d, char *argument )
       {
          case 'y':
          case 'Y':
-            sprintf( buf, "New character.\n\rGive me a password for %s: %s", ch->name, echo_off_str );
+            sprintf( buf, "New character.\n\rGive me a password for %s: ", ch->name );
             write_to_buffer( d, buf, 0 );
+            if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+               write_to_buffer( d, echo_off_str, 0 );
             d->connected = CON_GET_NEW_PASSWORD;
             return;
 
@@ -2741,7 +2758,8 @@ void nanny( DESCRIPTOR_DATA * d, char *argument )
          d->connected = CON_GET_NEW_PASSWORD;
          return;
       }
-      write_to_buffer( d, echo_on_str, 0 );
+      if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+         write_to_buffer( d, echo_on_str, 0 );
       show_menu_to( d );
       d->connected = CON_MENU;
       return;
