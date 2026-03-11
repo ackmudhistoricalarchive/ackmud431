@@ -65,6 +65,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/telnet.h>
+#include <stdint.h>
+#include <strings.h>
 const char echo_off_str[] = { IAC, WILL, TELOPT_ECHO, '\0' };
 const char echo_on_str[] = { IAC, WONT, TELOPT_ECHO, '\0' };
 const char go_ahead_str[] = { IAC, GA, '\0' };
@@ -125,6 +127,9 @@ void new_descriptor( int control );
 bool read_from_descriptor( DESCRIPTOR_DATA * d );
 bool write_to_descriptor( int desc, char *txt, int length );
 void init_descriptor( DESCRIPTOR_DATA * dnew, int desc );
+bool websocket_handshake( DESCRIPTOR_DATA * d, const char *request );
+bool websocket_extract_lines( DESCRIPTOR_DATA * d );
+bool websocket_write_frame( int desc, char *txt, int length );
 
 /*
  * Other local functions (OS-independent).
@@ -141,6 +146,150 @@ void bust_a_prompt args( ( DESCRIPTOR_DATA * d ) );
 void free_desc args( ( DESCRIPTOR_DATA * d ) );
 
 int global_port;
+
+static const char websocket_guid[] = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+static const char websocket_b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+typedef struct
+{
+   uint32_t state[5];
+   uint64_t count;
+   unsigned char buffer[64];
+} WS_SHA1_CTX;
+
+static const char *ws_strcasestr( const char *haystack, const char *needle )
+{
+   size_t nlen = strlen( needle );
+
+   if( nlen == 0 )
+      return haystack;
+
+   for( ; *haystack; haystack++ )
+      if( strncasecmp( haystack, needle, nlen ) == 0 )
+         return haystack;
+
+   return NULL;
+}
+
+static uint32_t ws_rotl32( uint32_t value, int bits )
+{
+   return ( value << bits ) | ( value >> ( 32 - bits ) );
+}
+
+static void ws_sha1_transform( uint32_t state[5], const unsigned char block[64] )
+{
+   uint32_t w[80], a, b, c, d, e, t;
+   int i;
+
+   for( i = 0; i < 16; i++ )
+      w[i] = ( ( uint32_t )block[i * 4] << 24 ) | ( ( uint32_t )block[i * 4 + 1] << 16 )
+             | ( ( uint32_t )block[i * 4 + 2] << 8 ) | block[i * 4 + 3];
+
+   for( i = 16; i < 80; i++ )
+      w[i] = ws_rotl32( w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1 );
+
+   a = state[0];
+   b = state[1];
+   c = state[2];
+   d = state[3];
+   e = state[4];
+
+   for( i = 0; i < 80; i++ )
+   {
+      if( i < 20 )
+         t = ws_rotl32( a, 5 ) + ( ( b & c ) | ( ( ~b ) & d ) ) + e + w[i] + 0x5A827999;
+      else if( i < 40 )
+         t = ws_rotl32( a, 5 ) + ( b ^ c ^ d ) + e + w[i] + 0x6ED9EBA1;
+      else if( i < 60 )
+         t = ws_rotl32( a, 5 ) + ( ( b & c ) | ( b & d ) | ( c & d ) ) + e + w[i] + 0x8F1BBCDC;
+      else
+         t = ws_rotl32( a, 5 ) + ( b ^ c ^ d ) + e + w[i] + 0xCA62C1D6;
+
+      e = d;
+      d = c;
+      c = ws_rotl32( b, 30 );
+      b = a;
+      a = t;
+   }
+
+   state[0] += a;
+   state[1] += b;
+   state[2] += c;
+   state[3] += d;
+   state[4] += e;
+}
+
+static void ws_sha1_init( WS_SHA1_CTX *ctx )
+{
+   ctx->state[0] = 0x67452301;
+   ctx->state[1] = 0xEFCDAB89;
+   ctx->state[2] = 0x98BADCFE;
+   ctx->state[3] = 0x10325476;
+   ctx->state[4] = 0xC3D2E1F0;
+   ctx->count = 0;
+}
+
+static void ws_sha1_update( WS_SHA1_CTX *ctx, const unsigned char *data, size_t len )
+{
+   size_t i = 0, idx = ( size_t )( ( ctx->count >> 3 ) % 64 ), part = 64 - idx;
+
+   ctx->count += ( uint64_t )len << 3;
+
+   if( len >= part )
+   {
+      memcpy( &ctx->buffer[idx], data, part );
+      ws_sha1_transform( ctx->state, ctx->buffer );
+
+      for( i = part; i + 63 < len; i += 64 )
+         ws_sha1_transform( ctx->state, data + i );
+
+      idx = 0;
+   }
+
+   memcpy( &ctx->buffer[idx], data + i, len - i );
+}
+
+static void ws_sha1_final( unsigned char digest[20], WS_SHA1_CTX *ctx )
+{
+   unsigned char bits[8], pad[64];
+   size_t idx, pad_len;
+   int i;
+
+   for( i = 0; i < 8; i++ )
+      bits[i] = ( unsigned char )( ( ctx->count >> ( ( 7 - i ) * 8 ) ) & 0xFF );
+
+   memset( pad, 0, sizeof( pad ) );
+   pad[0] = 0x80;
+
+   idx = ( size_t )( ( ctx->count >> 3 ) % 64 );
+   pad_len = ( idx < 56 ) ? ( 56 - idx ) : ( 120 - idx );
+
+   ws_sha1_update( ctx, pad, pad_len );
+   ws_sha1_update( ctx, bits, 8 );
+
+   for( i = 0; i < 20; i++ )
+      digest[i] = ( unsigned char )( ( ctx->state[i / 4] >> ( ( 3 - ( i % 4 ) ) * 8 ) ) & 0xFF );
+}
+
+static void ws_base64_encode( const unsigned char *in, size_t inlen, char *out, size_t outlen )
+{
+   size_t i, o = 0;
+
+   for( i = 0; i < inlen && o + 4 < outlen; i += 3 )
+   {
+      uint32_t v = ( uint32_t )in[i] << 16;
+
+      v |= ( i + 1 < inlen ) ? ( uint32_t )in[i + 1] << 8 : 0;
+      v |= ( i + 2 < inlen ) ? in[i + 2] : 0;
+
+      out[o++] = websocket_b64[( v >> 18 ) & 0x3F];
+      out[o++] = websocket_b64[( v >> 12 ) & 0x3F];
+      out[o++] = ( i + 1 < inlen ) ? websocket_b64[( v >> 6 ) & 0x3F] : '=';
+      out[o++] = ( i + 2 < inlen ) ? websocket_b64[v & 0x3F] : '=';
+   }
+
+   out[o] = '\0';
+}
 
 int main( int argc, char **argv )
 {
@@ -364,7 +513,7 @@ void game_loop( int control )
 
       for( d = first_desc; d; d = d->next )
       {
-         if( ( d->flags && DESC_FLAG_PASSTHROUGH ) == 0 )
+         if( ( d->flags & DESC_FLAG_PASSTHROUGH ) == 0 )
          {
             maxdesc = UMAX( maxdesc, d->descriptor );
             FD_SET( d->descriptor, &in_set );
@@ -708,18 +857,27 @@ void new_descriptor( int control )
       char buf[MAX_STRING_LENGTH];
       HELP_DATA *pHelp;
       extern HELP_DATA *first_help;
+      char peekbuf[5] = { 0, 0, 0, 0, 0 };
+      int nPeek = recv( desc, peekbuf, 4, MSG_PEEK );
+      bool send_greeting = TRUE;
 
-      sprintf( buf, "greeting%d", 0 /* number_range( 0, 4 ) */  );
+      if( nPeek > 0 && !strncmp( peekbuf, "GET ", 4 ) )
+         send_greeting = FALSE;
 
-      for( pHelp = first_help; pHelp != NULL; pHelp = pHelp->next )
-         if( !str_cmp( pHelp->keyword, buf ) )
-         {
-            if( pHelp->text[0] == '.' )
-               write_to_buffer( dnew, pHelp->text + 1, 0 );
-            else
-               write_to_buffer( dnew, pHelp->text, 0 );
-            break;   /* so no more found through multiple copies */
-         }
+      if( send_greeting )
+      {
+         sprintf( buf, "greeting%d", 0 /* number_range( 0, 4 ) */  );
+
+         for( pHelp = first_help; pHelp != NULL; pHelp = pHelp->next )
+            if( !str_cmp( pHelp->keyword, buf ) )
+            {
+               if( pHelp->text[0] == '.' )
+                  write_to_buffer( dnew, pHelp->text + 1, 0 );
+               else
+                  write_to_buffer( dnew, pHelp->text, 0 );
+               break; /* so no more found through multiple copies */
+            }
+      }
    }
 
    cur_players++;
@@ -741,7 +899,122 @@ void init_descriptor( DESCRIPTOR_DATA * dnew, int desc )
    dnew->outbuf = getmem( dnew->outsize );
    dnew->flags = 0;
    dnew->childpid = 0;
+   dnew->ws_rawlen = 0;
 
+}
+
+bool websocket_handshake( DESCRIPTOR_DATA * d, const char *request )
+{
+   const char *key = ws_strcasestr( request, "Sec-WebSocket-Key:" );
+   const char *up = ws_strcasestr( request, "Upgrade:" );
+   const char *conn = ws_strcasestr( request, "Connection:" );
+   const char *ver = ws_strcasestr( request, "Sec-WebSocket-Version:" );
+   const char *line_end;
+   char ws_key[256], src[512], accept_key[64], reply[256];
+   unsigned char digest[20];
+   WS_SHA1_CTX ctx;
+   size_t key_len;
+
+   if( !key || !up || !conn || !ver )
+      return FALSE;
+   if( ws_strcasestr( up, "websocket" ) == NULL || ws_strcasestr( conn, "upgrade" ) == NULL )
+      return FALSE;
+
+   line_end = strstr( ver, "\r\n" );
+   if( !line_end || strncmp( ver + strlen( "Sec-WebSocket-Version:" ), " 13", 3 ) != 0 )
+      return FALSE;
+
+   key += strlen( "Sec-WebSocket-Key:" );
+   while( *key == ' ' || *key == '\t' )
+      key++;
+   line_end = strstr( key, "\r\n" );
+   if( !line_end )
+      return FALSE;
+
+   key_len = ( size_t )( line_end - key );
+   if( key_len == 0 || key_len >= sizeof( ws_key ) )
+      return FALSE;
+
+   memcpy( ws_key, key, key_len );
+   ws_key[key_len] = '\0';
+   snprintf( src, sizeof( src ), "%s%s", ws_key, websocket_guid );
+   ws_sha1_init( &ctx );
+   ws_sha1_update( &ctx, ( unsigned char * )src, strlen( src ) );
+   ws_sha1_final( digest, &ctx );
+   ws_base64_encode( digest, 20, accept_key, sizeof( accept_key ) );
+
+   snprintf( reply, sizeof( reply ),
+             "HTTP/1.1 101 Switching Protocols\r\n"
+             "Upgrade: websocket\r\n"
+             "Connection: Upgrade\r\n"
+             "Sec-WebSocket-Accept: %s\r\n\r\n", accept_key );
+
+   if( !write_to_descriptor( d->descriptor, reply, 0 ) )
+      return FALSE;
+
+   SET_BIT( d->flags, DESC_FLAG_WEBSOCKET );
+   d->ws_rawlen = 0;
+   d->inbuf[0] = '\0';
+
+   websocket_write_frame( d->descriptor, "\n\rName: ", 0 );
+
+   return TRUE;
+}
+
+bool websocket_extract_lines( DESCRIPTOR_DATA * d )
+{
+   size_t pos = 0;
+
+   while( d->ws_rawlen - ( int )pos >= 2 )
+   {
+      unsigned char *f = d->ws_rawbuf + pos;
+      size_t plen = f[1] & 0x7F, hdr = 2, i;
+      unsigned char *mask;
+
+      if( ( f[0] & 0x80 ) == 0 )
+         return FALSE;
+      if( plen == 126 )
+      {
+         if( d->ws_rawlen - ( int )pos < 4 )
+            break;
+         plen = ( ( size_t )f[2] << 8 ) | f[3];
+         hdr = 4;
+      }
+      else if( plen == 127 )
+         return FALSE;
+      if( ( f[1] & 0x80 ) == 0 )
+         return FALSE;
+      if( d->ws_rawlen - ( int )pos < ( int )( hdr + 4 + plen ) )
+         break;
+
+      if( ( f[0] & 0x0F ) == 0x8 )
+         return FALSE;
+
+      mask = f + hdr;
+      if( ( f[0] & 0x0F ) == 0x1 )
+      {
+         size_t cur = strlen( d->inbuf );
+         for( i = 0; i < plen; i++ )
+         {
+            char ch = ( char )( f[hdr + 4 + i] ^ mask[i % 4] );
+            if( cur + 2 >= sizeof( d->inbuf ) )
+               return FALSE;
+            d->inbuf[cur++] = ( ch == '\r' ) ? '\n' : ch;
+         }
+         d->inbuf[cur++] = '\n';
+         d->inbuf[cur] = '\0';
+      }
+
+      pos += hdr + 4 + plen;
+   }
+
+   if( pos > 0 )
+   {
+      memmove( d->ws_rawbuf, d->ws_rawbuf + pos, d->ws_rawlen - ( int )pos );
+      d->ws_rawlen -= ( int )pos;
+   }
+
+   return TRUE;
 }
 
 void close_socket( DESCRIPTOR_DATA * dclose )
@@ -844,12 +1117,38 @@ bool read_from_descriptor( DESCRIPTOR_DATA * d )
    {
       int nRead;
 
-      nRead = read( d->descriptor, d->inbuf + iStart, sizeof( d->inbuf ) - 10 - iStart );
+      if( IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+         nRead = read( d->descriptor, d->ws_rawbuf + d->ws_rawlen, sizeof( d->ws_rawbuf ) - d->ws_rawlen );
+      else
+         nRead = read( d->descriptor, d->inbuf + iStart, sizeof( d->inbuf ) - 10 - iStart );
       if( nRead > 0 )
       {
-         iStart += nRead;
-         if( d->inbuf[iStart - 1] == '\n' || d->inbuf[iStart - 1] == '\r' )
-            break;
+         if( IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+         {
+            d->ws_rawlen += nRead;
+            if( !websocket_extract_lines( d ) )
+               return FALSE;
+            if( d->inbuf[0] != '\0' && ( strchr( d->inbuf, '\n' ) || strchr( d->inbuf, '\r' ) ) )
+               break;
+         }
+         else
+         {
+            iStart += nRead;
+            d->inbuf[iStart] = '\0';
+
+            if( strncmp( d->inbuf, "GET ", 4 ) == 0 && strstr( d->inbuf, "\r\n\r\n" ) != NULL )
+            {
+               if( websocket_handshake( d, d->inbuf ) )
+               {
+                  write_to_buffer( d, "\n\r", 0 );
+                  return TRUE;
+               }
+               return FALSE;
+            }
+
+            if( d->inbuf[iStart - 1] == '\n' || d->inbuf[iStart - 1] == '\r' )
+               break;
+         }
       }
       else if( nRead == 0 )
       {
@@ -864,7 +1163,9 @@ bool read_from_descriptor( DESCRIPTOR_DATA * d )
          return FALSE;
       }
    }
-   d->inbuf[iStart] = '\0';
+   if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+      d->inbuf[iStart] = '\0';
+
    return TRUE;
 }
 
@@ -1873,12 +2174,17 @@ void write_to_buffer( DESCRIPTOR_DATA * d, const char *txt, int length )
  */
 bool write_to_descriptor( int desc, char *txt, int length )
 {
+   DESCRIPTOR_DATA *d;
    int iStart;
    int nWrite;
    int nBlock;
 
    if( length <= 0 )
       length = strlen( txt );
+
+   for( d = first_desc; d != NULL; d = d->next )
+      if( d->descriptor == desc && IS_SET( d->flags, DESC_FLAG_WEBSOCKET ) )
+         return websocket_write_frame( desc, txt, length );
 
    for( iStart = 0; iStart < length; iStart += nWrite )
    {
@@ -1889,6 +2195,50 @@ bool write_to_descriptor( int desc, char *txt, int length )
          return FALSE;
       }
    }
+   return TRUE;
+}
+
+bool websocket_write_frame( int desc, char *txt, int length )
+{
+   unsigned char hdr[4];
+   int hlen = 0;
+   int iStart;
+   int nWrite;
+   int nBlock;
+
+   if( length <= 0 )
+      length = strlen( txt );
+
+   hdr[hlen++] = 0x81;
+   if( length < 126 )
+      hdr[hlen++] = ( unsigned char )length;
+   else
+   {
+      hdr[hlen++] = 126;
+      hdr[hlen++] = ( unsigned char )( ( length >> 8 ) & 0xFF );
+      hdr[hlen++] = ( unsigned char )( length & 0xFF );
+   }
+
+   for( iStart = 0; iStart < hlen; iStart += nWrite )
+   {
+      nBlock = UMIN( hlen - iStart, 4096 );
+      if( ( nWrite = write( desc, hdr + iStart, nBlock ) ) < 0 )
+      {
+         perror( "Write_to_descriptor" );
+         return FALSE;
+      }
+   }
+
+   for( iStart = 0; iStart < length; iStart += nWrite )
+   {
+      nBlock = UMIN( length - iStart, 4096 );
+      if( ( nWrite = write( desc, txt + iStart, nBlock ) ) < 0 )
+      {
+         perror( "Write_to_descriptor" );
+         return FALSE;
+      }
+   }
+
    return TRUE;
 }
 
