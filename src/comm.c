@@ -130,6 +130,7 @@ void init_descriptor( DESCRIPTOR_DATA * dnew, int desc );
 bool websocket_handshake( DESCRIPTOR_DATA * d, const char *request );
 bool websocket_extract_lines( DESCRIPTOR_DATA * d );
 bool websocket_write_frame( int desc, char *txt, int length );
+void send_login_greeting( DESCRIPTOR_DATA * dnew );
 
 /*
  * Other local functions (OS-independent).
@@ -640,6 +641,27 @@ void game_loop( int control )
             continue;
          }
 
+         if( d->connected == CON_GET_NAME
+             && !IS_SET( d->flags, DESC_FLAG_WEBSOCKET )
+             && !IS_SET( d->flags, DESC_FLAG_GREETING_SENT )
+             && current_time > d->timeout - 180 )
+         {
+            char peekbuf[5] = { 0, 0, 0, 0, 0 };
+            int nPeek;
+
+            if( current_time <= d->timeout - 178 )
+               continue;
+
+            if( !strncmp( d->inbuf, "GET ", 4 ) && strstr( d->inbuf, "\r\n\r\n" ) == NULL )
+               continue;
+
+            nPeek = recv( d->descriptor, peekbuf, 4, MSG_PEEK );
+            if( nPeek > 0 && !strncmp( peekbuf, "GET ", 4 ) )
+               continue;
+
+            send_login_greeting( d );
+         }
+
          if( ( d->fcommand || d->outtop > 0 ) && FD_ISSET( d->descriptor, &out_set ) )
          {
             if( !process_output( d, TRUE ) )
@@ -851,34 +873,8 @@ void new_descriptor( int control )
    dnew->timeout = current_time + 180;
 
    /*
-    * Send the greeting.
+    * Delay greeting to avoid racing websocket HTTP upgrades.
     */
-   {
-      char buf[MAX_STRING_LENGTH];
-      HELP_DATA *pHelp;
-      extern HELP_DATA *first_help;
-      char peekbuf[5] = { 0, 0, 0, 0, 0 };
-      int nPeek = recv( desc, peekbuf, 4, MSG_PEEK );
-      bool send_greeting = TRUE;
-
-      if( nPeek > 0 && !strncmp( peekbuf, "GET ", 4 ) )
-         send_greeting = FALSE;
-
-      if( send_greeting )
-      {
-         sprintf( buf, "greeting%d", 0 /* number_range( 0, 4 ) */  );
-
-         for( pHelp = first_help; pHelp != NULL; pHelp = pHelp->next )
-            if( !str_cmp( pHelp->keyword, buf ) )
-            {
-               if( pHelp->text[0] == '.' )
-                  write_to_buffer( dnew, pHelp->text + 1, 0 );
-               else
-                  write_to_buffer( dnew, pHelp->text, 0 );
-               break; /* so no more found through multiple copies */
-            }
-      }
-   }
 
    cur_players++;
    if( cur_players > max_players )
@@ -901,6 +897,30 @@ void init_descriptor( DESCRIPTOR_DATA * dnew, int desc )
    dnew->childpid = 0;
    dnew->ws_rawlen = 0;
 
+}
+
+void send_login_greeting( DESCRIPTOR_DATA * dnew )
+{
+   char buf[MAX_STRING_LENGTH];
+   HELP_DATA *pHelp;
+   extern HELP_DATA *first_help;
+
+   if( IS_SET( dnew->flags, DESC_FLAG_GREETING_SENT ) )
+      return;
+
+   sprintf( buf, "greeting%d", 0 /* number_range( 0, 4 ) */  );
+
+   for( pHelp = first_help; pHelp != NULL; pHelp = pHelp->next )
+      if( !str_cmp( pHelp->keyword, buf ) )
+      {
+         if( pHelp->text[0] == '.' )
+            write_to_buffer( dnew, pHelp->text + 1, 0 );
+         else
+            write_to_buffer( dnew, pHelp->text, 0 );
+         break;
+      }
+
+   SET_BIT( dnew->flags, DESC_FLAG_GREETING_SENT );
 }
 
 bool websocket_handshake( DESCRIPTOR_DATA * d, const char *request )
@@ -969,7 +989,9 @@ bool websocket_extract_lines( DESCRIPTOR_DATA * d )
    {
       unsigned char *f = d->ws_rawbuf + pos;
       size_t plen = f[1] & 0x7F, hdr = 2, i;
-      unsigned char *mask;
+      bool masked = ( f[1] & 0x80 ) != 0;
+      size_t payload_off;
+      unsigned char *mask = NULL;
 
       if( ( f[0] & 0x80 ) == 0 )
          return FALSE;
@@ -982,21 +1004,27 @@ bool websocket_extract_lines( DESCRIPTOR_DATA * d )
       }
       else if( plen == 127 )
          return FALSE;
-      if( ( f[1] & 0x80 ) == 0 )
-         return FALSE;
-      if( d->ws_rawlen - ( int )pos < ( int )( hdr + 4 + plen ) )
+      payload_off = hdr + ( masked ? 4 : 0 );
+      if( d->ws_rawlen - ( int )pos < ( int )( payload_off + plen ) )
          break;
 
       if( ( f[0] & 0x0F ) == 0x8 )
          return FALSE;
 
-      mask = f + hdr;
+      if( masked )
+         mask = f + hdr;
       if( ( f[0] & 0x0F ) == 0x1 )
       {
          size_t cur = strlen( d->inbuf );
          for( i = 0; i < plen; i++ )
          {
-            char ch = ( char )( f[hdr + 4 + i] ^ mask[i % 4] );
+            char ch;
+
+            if( masked )
+               ch = ( char )( f[payload_off + i] ^ mask[i % 4] );
+            else
+               ch = ( char )f[payload_off + i];
+
             if( cur + 2 >= sizeof( d->inbuf ) )
                return FALSE;
             d->inbuf[cur++] = ( ch == '\r' ) ? '\n' : ch;
@@ -1005,7 +1033,7 @@ bool websocket_extract_lines( DESCRIPTOR_DATA * d )
          d->inbuf[cur] = '\0';
       }
 
-      pos += hdr + 4 + plen;
+      pos += payload_off + plen;
    }
 
    if( pos > 0 )
@@ -1146,6 +1174,9 @@ bool read_from_descriptor( DESCRIPTOR_DATA * d )
                return FALSE;
             }
 
+            if( strncmp( d->inbuf, "GET ", 4 ) == 0 && strstr( d->inbuf, "\r\n\r\n" ) == NULL )
+               continue;
+
             if( d->inbuf[iStart - 1] == '\n' || d->inbuf[iStart - 1] == '\r' )
                break;
          }
@@ -1180,6 +1211,11 @@ void read_from_buffer( DESCRIPTOR_DATA * d )
     * Hold horses if pending command already.
     */
    if( d->incomm[0] != '\0' )
+      return;
+
+   if( !IS_SET( d->flags, DESC_FLAG_WEBSOCKET )
+       && !strncmp( d->inbuf, "GET ", 4 )
+       && strstr( d->inbuf, "\r\n\r\n" ) == NULL )
       return;
 
    /*
