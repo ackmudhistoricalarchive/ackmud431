@@ -1014,7 +1014,14 @@ bool websocket_extract_lines( DESCRIPTOR_DATA * d )
                return FALSE;
             d->inbuf[cur++] = ( ch == '\r' ) ? '\n' : ch;
          }
-         d->inbuf[cur++] = '\n';
+
+         /*
+          * Browsers commonly send newline-terminated input already.
+          * Only synthesize a line terminator when the frame does not
+          * end with one, otherwise we create an extra empty command.
+          */
+         if( cur == 0 || d->inbuf[cur - 1] != '\n' )
+            d->inbuf[cur++] = '\n';
          d->inbuf[cur] = '\0';
       }
 
