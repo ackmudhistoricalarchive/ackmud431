@@ -2243,6 +2243,19 @@ bool websocket_write_frame( int desc, char *txt, int length )
    if( length <= 0 )
       length = strlen( txt );
 
+   /* Strip all \r characters before sending to websocket client */
+   char *filtered = malloc( length + 1 );
+   if( filtered )
+   {
+      int j = 0;
+      for( int i = 0; i < length; i++ )
+         if( txt[i] != '\r' )
+            filtered[j++] = txt[i];
+      filtered[j] = '\0';
+      length = j;
+      txt = filtered;
+   }
+
    hdr[hlen++] = 0x81;
    if( length < 126 )
       hdr[hlen++] = ( unsigned char )length;
@@ -2259,6 +2272,7 @@ bool websocket_write_frame( int desc, char *txt, int length )
       if( ( nWrite = write( desc, hdr + iStart, nBlock ) ) < 0 )
       {
          perror( "Write_to_descriptor" );
+         free( filtered );
          return FALSE;
       }
    }
@@ -2269,10 +2283,12 @@ bool websocket_write_frame( int desc, char *txt, int length )
       if( ( nWrite = write( desc, txt + iStart, nBlock ) ) < 0 )
       {
          perror( "Write_to_descriptor" );
+         free( filtered );
          return FALSE;
       }
    }
 
+   free( filtered );
    return TRUE;
 }
 
