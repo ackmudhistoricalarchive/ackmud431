@@ -763,7 +763,8 @@ void new_descriptor( int control )
     * BAN_DATA *pban;   
     */
    struct sockaddr_in sock;
-   size_t desc, size;
+   int desc;
+   socklen_t size;
 
    size = sizeof( sock );
    getsockname( control, ( struct sockaddr * )&sock, &size );
