@@ -14,7 +14,7 @@ jobs:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
           mkdir -p ~/.ssh
-          echo "$DEPLOY_KEY_B64" | base64 -d > ~/.ssh/deploy_key
+          printenv DEPLOY_KEY_B64 | base64 -d > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh -i ~/.ssh/deploy_key -p 2222 -o StrictHostKeyChecking=no \
             deploy@"$DEPLOY_HOST" \
