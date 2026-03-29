@@ -6,8 +6,8 @@ SSH="ssh -o StrictHostKeyChecking=no"
 cd src
 make
 cd -
-# Deploy binary
+# Stop service, deploy binary, restart
+$SSH $TARGET "sudo systemctl stop mud"
 scp -o StrictHostKeyChecking=no src/ack $TARGET:/opt/mud/src/src/ack
-# Restart service
-$SSH $TARGET "sudo systemctl restart mud"
+$SSH $TARGET "sudo systemctl start mud"
 echo "Deployed to ackmud431"
