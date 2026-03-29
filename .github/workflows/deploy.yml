@@ -10,11 +10,11 @@ jobs:
     steps:
       - name: Deploy to server
         env:
-          DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
           mkdir -p ~/.ssh
-          printf %sn "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          echo "$DEPLOY_KEY_B64" | base64 -d > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh -i ~/.ssh/deploy_key -p 2222 -o StrictHostKeyChecking=no \
             deploy@"$DEPLOY_HOST" \
