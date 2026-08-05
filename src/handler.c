@@ -713,10 +713,20 @@ void affect_remove( CHAR_DATA * ch, AFFECT_DATA * paf )
          char buf1[MSL];
          char buf2[MSL];
 
-         sprintf( buf1, this_shield->wearoff_room );
-         sprintf( buf2, this_shield->wearoff_self );
-         act( buf1, ch, NULL, NULL, TO_ROOM );
-         act( buf2, ch, NULL, NULL, TO_CHAR );
+         /* These are message strings, NOT format strings. Passing them
+            straight to sprintf crashes when they are NULL (a recycled shield
+            is memset to zero by GET_FREE, and several shield types never set
+            them) and would misparse any '%' in the text. */
+         snprintf( buf1, sizeof( buf1 ), "%s",
+                   this_shield->wearoff_room != NULL
+                     ? this_shield->wearoff_room : "" );
+         snprintf( buf2, sizeof( buf2 ), "%s",
+                   this_shield->wearoff_self != NULL
+                     ? this_shield->wearoff_self : "" );
+         if ( buf1[0] != '\0' )
+            act( buf1, ch, NULL, NULL, TO_ROOM );
+         if ( buf2[0] != '\0' )
+            act( buf2, ch, NULL, NULL, TO_CHAR );
 
          UNLINK( this_shield, ch->first_shield, ch->last_shield, next, prev );
          PUT_FREE( this_shield, shield_free );
